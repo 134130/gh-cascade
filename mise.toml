@@ -1,0 +1,7 @@
+[tools]
+"go" = "1.23"
+"goreleaser" = "latest"
+"watchexec" = "latest"
+
+[tasks.build]
+run = "go build"
