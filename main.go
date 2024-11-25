@@ -98,8 +98,13 @@ func main() {
 		fmt.Fprintf(color.Output, "%s%s\n", green("✔"), " No open or draft pull requests found.")
 		return
 	} else {
-		fmt.Fprintf(color.Output, "%s%s\n", green("✔"), bold(fmt.Sprintf(" Found %d open or draft pull requests.", len(pullRequests))))
+		fmt.Fprintf(color.Output, "%s%s\n", green("✔"), fmt.Sprintf(" Found %d open or draft pull requests.", len(pullRequests)))
 	}
+
+	sp = spinner.New(spinner.CharSets[14], 40*time.Millisecond)
+	sp.Suffix = " Rebasing pull requests..."
+	sp.Start()
+	defer sp.Stop()
 
 	processedPullRequests := []ProcessedPullRequest{}
 
@@ -184,6 +189,9 @@ func main() {
 			Error:               nil,
 		})
 	}
+
+	sp.Stop()
+	fmt.Fprintf(color.Output, "%s%s\n", green("✔"), " Rebasing pull requests...")
 
 	fmt.Fprintf(color.Output, "\n%s\n", bold("Rebased pull requests"))
 	for _, pr := range processedPullRequests {
