@@ -173,7 +173,7 @@ func main() {
 			continue
 		}
 
-		if err = RebaseOntoPullRequest(ctx, "origin/"+defaultBranch, dependedPullRequest.MergeCommit.Oid, pr.HeadRefName); err != nil {
+		if err = RebaseOntoPullRequest(ctx, dependedPullRequest.MergeCommit.Oid, pr.Commits[len(pr.Commits)-1].Oid, pr.HeadRefName); err != nil {
 			processedPullRequests = append(processedPullRequests, ProcessedPullRequest{
 				PullRequest: pr,
 				DependOns:   dependOns,
@@ -248,6 +248,9 @@ type PullRequest struct {
 	MergeCommit struct {
 		Oid string `json:"oid"`
 	} `json:"mergeCommit,omitempty"`
+	Commits []struct {
+		Oid string `json:"oid"`
+	}
 }
 
 func GetDefaultBranch(ctx context.Context) (string, error) {
@@ -288,7 +291,7 @@ func FetchOriginBranch(ctx context.Context, branch string) error {
 }
 
 func ListPullRequests(ctx context.Context) ([]PullRequest, error) {
-	stdout, stderr, err := gh.ExecContext(ctx, "pr", "list", "--author", "@me", "--state", "open", "--json", "baseRefName,body,headRefName,isDraft,number,title,url,mergeCommit,state")
+	stdout, stderr, err := gh.ExecContext(ctx, "pr", "list", "--author", "@me", "--state", "open", "--json", "baseRefName,body,headRefName,isDraft,number,title,url,mergeCommit,state,commits")
 	if err != nil {
 		return nil, err
 	}
@@ -306,7 +309,7 @@ func ListPullRequests(ctx context.Context) ([]PullRequest, error) {
 }
 
 func GetPullRequest(ctx context.Context, number int) (*PullRequest, error) {
-	stdout, stderr, err := gh.ExecContext(ctx, "pr", "view", strconv.Itoa(number), "--json", "baseRefName,body,headRefName,isDraft,number,title,url,mergeCommit,state")
+	stdout, stderr, err := gh.ExecContext(ctx, "pr", "view", strconv.Itoa(number), "--json", "baseRefName,body,headRefName,isDraft,number,title,url,mergeCommit,state,commits")
 
 	if err != nil {
 		return nil, err
